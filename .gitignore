@@ -1,0 +1,12 @@
+# log files #
+*.log 
+log/
+
+# OS Files #
+*.swp
+
+# vscode #
+.vscode/
+
+# vscode #
+# db.sqlite3
