@@ -16,7 +16,7 @@
     <br />
     <hr />
     <div class="col-md-6 mx-auto">
-      <form method="POST" action=".">
+      <form method="POST" action="{% url 'register' %}">
         {% csrf_token %}
         <div class="form-group">
           <label for="username" class="text-danger">사용자 이름</label>

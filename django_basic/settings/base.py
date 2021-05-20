@@ -38,11 +38,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "home",
-    "user",    
-    # 'user_abstractbaseuser',
-    # 'user_abstractuser',
-    # 'user_profile_table',
-    # 'user_proxy',
+    "user",
+    "board",
+    "tag",
 ]
 
 MIDDLEWARE = [

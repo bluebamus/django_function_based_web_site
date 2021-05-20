@@ -6,30 +6,34 @@ from .forms import LoginForm
 
 # Create your views here.
 
+
 def logout(request):
     if request.session.get("user"):
         del request.session["user"]
 
     return redirect("/")
 
+
 # forms.py 사용 방법
 # django의 기본 user model을 사용하지 않고 사용자가 생성한 테이블을 사용
-def login_new_table(request):
+def login(request):
+    print("request.method : ", request.method)
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
             request.session["user"] = form.user_id
-            return redirect("/")
+            context = {"username": form.user_name}
+            return render(request, "index.html", context)
     else:
         form = LoginForm()
 
-    return render(request, "user/login_new_table.html", {"form": form})
+    return render(request, "login.html", {"form": form})
 
 
 # forms.py 사용 없이, 하드 코딩 하는 방법
 def register(request):
     if request.method == "GET":
-        return render(request, "user/register.html")
+        return render(request, "register.html")
     elif request.method == "POST":
         username = request.POST.get("username", None)
         useremail = request.POST.get("useremail", None)
@@ -43,8 +47,7 @@ def register(request):
         elif password != re_password:
             res_data["error"] = "비밀번호가 다릅니다."
         else:
-
-            if not (Usert.objects.get(username=username)):
+            if not (Usert.objects.filter(username=username)):
                 usert = Usert(
                     username=username, useremail=useremail, password=make_password(password)
                 )
@@ -52,9 +55,9 @@ def register(request):
 
                 # 가입과 동시에 로그인 상태로 만들어주는
                 request.session["user"] = usert.id
-                return redirect("/")
-
+                context = {"username": username}
+                return render(request, "index.html", context)
             else:
                 res_data["error"] = "아이디가 이미 가입되어 있습니다."
 
-        return render(request, "user/register.html", res_data)
+        return render(request, "register.html", res_data)

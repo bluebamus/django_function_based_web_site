@@ -29,3 +29,4 @@ class LoginForm(forms.Form):
                 self.add_error("password", "비밀번호를 틀렸습니다")
             else:
                 self.user_id = usert.id
+                self.user_name = usert.username
