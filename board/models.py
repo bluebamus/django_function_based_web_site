@@ -9,6 +9,7 @@ class Board(models.Model):
     # TextField는 길이에 제한이 없음
     writer = models.ForeignKey("user.Usert", on_delete=models.CASCADE, verbose_name="글쓴이")
     tags = models.ManyToManyField("tag.Tag", verbose_name="태그")
+
     registered_dttm = models.DateTimeField(auto_now_add=True, verbose_name="등록시간")
 
     def __str__(self):

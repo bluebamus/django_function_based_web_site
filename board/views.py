@@ -24,27 +24,32 @@ def board_update(request, pk):
     except Board.DoesNotExist:
         raise Http404("게시글을 찾을 수 없습니다")
 
-    if request.method == "POST":
-        form = BoardUpdateForm(request.POST)
-        if form.is_valid():
-            print("inside is_valid")
+    user_id = request.session.get("user")
+    usert = Usert.objects.get(pk=user_id)
 
+    if usert != board.writer:
+        err_msg = "글을 작성한 본인만 수정할 수 있습니다."
+        return render(request, "board_detail.html", {"board": board, "err_msg": err_msg})
+
+    if request.method == "POST":
+        form = BoardForm(request.POST)
+        if form.is_valid():
             user_id = request.session.get("user")
             usert = Usert.objects.get(pk=user_id)
             tags = form.cleaned_data["tags"].split(",")
 
+            # board = BoardForm()
             board.title = form.cleaned_data["title"]
             board.contents = form.cleaned_data["contents"]
             board.writer = usert
             board.save()
-            print("board :", board)
             # 보드 생성 이후 pk가 만들어지고 나서 만들어야 에러 발생이 안됨
             for tag in tags:
                 if not tag:
                     continue
 
                 # _tag, created = Tag.objects.get_or_create(name=tag)
-                _tag, _ = Tag.objects.get_or_create(name=tag)
+                _tag, _data = Tag.objects.get_or_create(name=tag.strip())
                 #  '_XXXX'는 protected를 의미함
                 #  '_'는 사용하지 않는 변수를 의미함
                 # Tag.objects.get_or_create(name=tag)는 가지고 있으면 가져오고 없으면 생성함
@@ -53,12 +58,14 @@ def board_update(request, pk):
                 # 이름만 확인하고 작성자가 없으면 기본값으로 생성
                 # Tag.objects.get_or_create(name=tag, defaults={'wr'})
                 board.tags.add(_tag)
-            print("board.tags :", board.tags)
             return redirect("board_detail", pk=pk)
-
-    form = BoardUpdateForm(instance=board)
-    print("form : ", form)
-    print("form['tags'].value() : ", form["tags"].value())
+    form = BoardUpdateForm(
+        initial={
+            "title": board.title,
+            "contents": board.contents,
+            "tags": [tag.name for tag in board.tags.all()],
+        }
+    )
     return render(request, "board_update.html", {"form": form, "board": board})
 
 
@@ -93,11 +100,7 @@ def board_write(request):
         if form.is_valid():
             user_id = request.session.get("user")
             usert = Usert.objects.get(pk=user_id)
-
             tags = form.cleaned_data["tags"].split(",")
-
-            form = PartialAuthorForm(request.POST, instance=author)
-            form.save()
 
             board = Board()
             board.title = form.cleaned_data["title"]
