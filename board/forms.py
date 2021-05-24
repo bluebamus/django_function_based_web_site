@@ -13,6 +13,7 @@ class BoardForm(forms.Form):
         label="content",
     )
     tags = forms.CharField(required=False, label="tag")
+    photo = forms.ImageField(required=False, label="photo")
 
 
 class BoardUpdateForm(forms.ModelForm):
@@ -27,6 +28,7 @@ class BoardUpdateForm(forms.ModelForm):
         }
         widgets = {
             "contents": forms.Textarea(attrs={"cols": 80, "rows": 20}),
+            "tags": forms.TextInput(),
         }
         help_texts = {}
         error_messages = {

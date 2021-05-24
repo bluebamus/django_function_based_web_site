@@ -16,10 +16,14 @@
             <input type="text" class="form-control" id="title" value="{{ board.title }}" readonly />
             <label for="contents">내용</label>
             <textarea class="form-control" readonly>{{ board.contents }}</textarea>
-            <label for="tags">태그</label>
+            <label for="tags">태그</label>            
             <span id="tags" class="form-control">
                 {{ board.tags.all|join:", " }}
             </span>
+            {% if board.photo %}
+            <label for="title">사진</label>
+            <img src="{{ board.photo.url }}" style="max-width:100%;"/>
+            {% endif %}
             </div>
             <button class="btn btn-primary" onclick="location.href='/board/list/'">돌아가기</button>
             <button class="btn btn-primary ml-3" onclick="location.href='{% url 'board_update' board.id %}'">수정하기</button>

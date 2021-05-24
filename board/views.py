@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
 from django.http import Http404
@@ -18,6 +19,7 @@ def board_detail(request, pk):
     return render(request, "board_detail.html", {"board": board})
 
 
+@login_required
 def board_update(request, pk):
     try:
         board = Board.objects.get(pk=pk)
@@ -32,8 +34,9 @@ def board_update(request, pk):
         return render(request, "board_detail.html", {"board": board, "err_msg": err_msg})
 
     if request.method == "POST":
-        form = BoardForm(request.POST)
+        form = BoardUpdateForm(request.POST, request.FILES)
         if form.is_valid():
+            print("!!!!inside!!!!")
             user_id = request.session.get("user")
             usert = Usert.objects.get(pk=user_id)
             tags = form.cleaned_data["tags"].split(",")
@@ -42,6 +45,7 @@ def board_update(request, pk):
             board.title = form.cleaned_data["title"]
             board.contents = form.cleaned_data["contents"]
             board.writer = usert
+            board.photo = form.cleaned_data["photo"]
             board.save()
             # 보드 생성 이후 pk가 만들어지고 나서 만들어야 에러 발생이 안됨
             for tag in tags:
@@ -57,18 +61,24 @@ def board_update(request, pk):
                 # 이름과 작성자가 다르면 새로 만듬
                 # 이름만 확인하고 작성자가 없으면 기본값으로 생성
                 # Tag.objects.get_or_create(name=tag, defaults={'wr'})
-                board.tags.add(_tag)
+                board.tags.add(_tag.strip())
             return redirect("board_detail", pk=pk)
-    form = BoardUpdateForm(
+        else:
+            print(form.errors)
+    form = BoardUpdateForm(instance=board)
+
+    """form = BoardUpdateForm(
         initial={
             "title": board.title,
             "contents": board.contents,
             "tags": [tag.name for tag in board.tags.all()],
+            "photo": board.photo,
         }
-    )
+    )"""
     return render(request, "board_update.html", {"form": form, "board": board})
 
 
+@login_required
 def board_delete(request, pk):
     try:
         board = Board.objects.get(pk=pk)
@@ -91,12 +101,13 @@ def board_delete(request, pk):
     return redirect("/board/list/")
 
 
+@login_required
 def board_write(request):
     if not request.session.get("user"):
         return redirect("/login/")
 
     if request.method == "POST":
-        form = BoardForm(request.POST)
+        form = BoardForm(request.POST, request.FILES)
         if form.is_valid():
             user_id = request.session.get("user")
             usert = Usert.objects.get(pk=user_id)
@@ -106,6 +117,7 @@ def board_write(request):
             board.title = form.cleaned_data["title"]
             board.contents = form.cleaned_data["contents"]
             board.writer = usert
+            board.photo = form.cleaned_data["photo"]
             board.save()
 
             # 보드 생성 이후 pk가 만들어지고 나서 만들어야 에러 발생이 안됨
@@ -114,7 +126,7 @@ def board_write(request):
                     continue
 
                 # _tag, created = Tag.objects.get_or_create(name=tag)
-                _tag, _ = Tag.objects.get_or_create(name=tag)
+                _tag, _ = Tag.objects.get_or_create(name=tag.strip())
                 #  '_XXXX'는 protected를 의미함
                 #  '_'는 사용하지 않는 변수를 의미함
                 # Tag.objects.get_or_create(name=tag)는 가지고 있으면 가져오고 없으면 생성함

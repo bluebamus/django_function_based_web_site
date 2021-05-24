@@ -10,6 +10,15 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+    def clean(self):
+        """
+        Custom validation (read docs)
+        PS: why do you have null=True on charfield?
+        we could avoid the check for name
+        """
+        if self.name:
+            self.name = self.name.strip()
+
     class Meta:
         db_table = "tag table"
         verbose_name = "태그"
