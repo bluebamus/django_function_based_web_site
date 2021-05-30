@@ -21,8 +21,8 @@
                 {{ board.tags.all|join:", " }}
             </span>
             {% if board.photo %}
-            <label for="title">사진</label>
-            <img src="{{ board.photo.url }}" style="max-width:100%;"/>
+            <label for="title">사진</label><br>
+            <img src="{{ board.photo.url }}" style="max-width:40%;"/>
             {% endif %}
             </div>
             <button class="btn btn-primary" onclick="location.href='/board/list/'">돌아가기</button>

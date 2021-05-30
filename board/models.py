@@ -21,6 +21,14 @@ def date_upload_to(instance, filename):
         ]
     )
 
+# def upload_to_func(instance, filename):
+#     prefix = timezone.now().strftime("%Y/%m/%d")
+#     file_name = uuid4().hex
+#     extension = os.path.splitext(filename)[-1].lower() # 확장자 추출
+#     return "/".join(
+#         [prefix, file_name, extension,]
+#     )
+
 
 class Board(models.Model):
     title = models.CharField(max_length=128, verbose_name="제목")
@@ -30,7 +38,18 @@ class Board(models.Model):
     tags = models.ManyToManyField("tag.Tag", verbose_name="태그", blank=True)
 
     registered_dttm = models.DateTimeField(auto_now_add=True, verbose_name="등록시간")
-    photo = models.ImageField(upload_to=date_upload_to, blank=True, null=True)
+    photo = models.ImageField(upload_to=date_upload_to, verbose_name="이미지")
+    #photo = models.ImageField(upload_to=date_upload_to, blank=True, null=True, default='default/no_img_lg.png', verbose_name="이미지")
+
+    def delete(self, *args, **kwargs):
+        if self.photo!='default/no_img_lg.png':
+            self.photo.delete()        
+        super().delete(*args, **kwargs)
+
+    # def delete(self, *args, **kargs):
+    #     if self.upload_files:
+    #         os.remove(os.path.join(settings.MEDIA_ROOT, self.upload_files.path))
+    #     super(Notice, self).delete(*args, **kargs)
 
     def __str__(self):
         return self.title
