@@ -5,6 +5,9 @@ log/
 # OS Files #
 *.swp
 
+# python cache #
+*.pyc
+
 # vscode #
 .vscode/
 

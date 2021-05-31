@@ -5,6 +5,7 @@ from user.models import Usert
 from tag.models import Tag
 from .models import Board
 from .forms import BoardForm, BoardUpdateForm
+from user.decorators import *
 
 # Create your views here.
 
@@ -18,6 +19,7 @@ def board_detail(request, pk):
     return render(request, "board_detail.html", {"board": board})
 
 
+@login_required
 def board_update(request, pk):
     try:
         #board = Board.objects.get(pk=pk)
@@ -80,6 +82,7 @@ def board_update(request, pk):
     return render(request, "board_update.html", {"form": form, "board": board})
 
 
+@login_required
 def board_delete(request, pk):
     try:
         board = Board.objects.get(pk=pk)
@@ -88,7 +91,7 @@ def board_delete(request, pk):
 
     if not request.session.get("user"):
 
-        err_msg = "로그인을 한 본인만 글을 삭제할 수 있습니다."
+        err_msg = "로그인을 한 사용자만 글을 삭제할 수 있습니다."
         return render(request, "board_detail.html", {"board": board, "err_msg": err_msg})
 
     user_id = request.session.get("user")
@@ -102,6 +105,7 @@ def board_delete(request, pk):
     return redirect("/board/list/")
 
 
+@login_required
 def board_write(request):
     if not request.session.get("user"):
         return redirect("/login/")
