@@ -1,5 +1,10 @@
 {% extends "base.html" %}
-
+{% block head %}
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+  />
+{% endblock %}
 {% block main %}
 <div class="container my-5">
     <header class="jumbotron my-1">
@@ -16,10 +21,23 @@
             <input type="text" class="form-control" id="title" value="{{ board.title }}" readonly />
             <label for="contents">내용</label>
             <textarea class="form-control" readonly>{{ board.contents }}</textarea>
-            <label for="tags">태그</label>            
+            <label for="tags">태그</label>
             <span id="tags" class="form-control">
                 {{ board.tags.all|join:", " }}
             </span>
+            <div class="my-4">
+            {% if request.user in article.like_users.all %}
+            <a href="{% url 'board_like' board.id %}">
+                <i class="fas fa-heart fa-lg animated hinge delay-1s" style="color: red;"></i>
+            </a>
+            {% else %}
+            <a href="{% url 'board_like' board.id %}">
+                <i class="far fa-heart fa-lg animated infinite bounce delay-1s" style="color: gray;"></i>
+            </a>
+            {% endif %}
+            <p class="mt-1">{{ board.like_count }}명이 좋아합니다.</p>
+            </div>
+
             {% if board.photo %}
             <label for="title">사진</label><br>
             <img src="{{ board.photo.url }}" style="max-width:40%;"/>

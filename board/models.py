@@ -2,6 +2,7 @@ from django.db import models
 import os
 from uuid import uuid4
 from django.utils import timezone
+from user.models import Usert
 
 # Create your models here.
 
@@ -21,6 +22,7 @@ def date_upload_to(instance, filename):
         ]
     )
 
+
 # def upload_to_func(instance, filename):
 #     prefix = timezone.now().strftime("%Y/%m/%d")
 #     file_name = uuid4().hex
@@ -34,16 +36,22 @@ class Board(models.Model):
     title = models.CharField(max_length=128, verbose_name="제목")
     contents = models.TextField(verbose_name="내용")
     # TextField는 길이에 제한이 없음
-    writer = models.ForeignKey("user.Usert", on_delete=models.CASCADE, verbose_name="글쓴이")
+    writer = models.ForeignKey(Usert, on_delete=models.CASCADE, verbose_name="글쓴이")
+    # models import 해서 사용하는 방법
     tags = models.ManyToManyField("tag.Tag", verbose_name="태그", blank=True)
+    # app의 class명을 명시적으로 입력해서 사용하는 방법
 
     registered_dttm = models.DateTimeField(auto_now_add=True, verbose_name="등록시간")
     photo = models.ImageField(upload_to=date_upload_to, verbose_name="이미지")
-    #photo = models.ImageField(upload_to=date_upload_to, blank=True, null=True, default='default/no_img_lg.png', verbose_name="이미지")
+    # photo = models.ImageField(upload_to=date_upload_to, blank=True, null=True, default='default/no_img_lg.png', verbose_name="이미지")
+
+    like = models.ManyToManyField(Usert, related_name="likes", blank=True)
+    like_count = models.PositiveIntegerField(default=0)
+    # 0 또는 양수만 받음
 
     def delete(self, *args, **kwargs):
-        if self.photo!='default/no_img_lg.png':
-            self.photo.delete()        
+        if self.photo != "default/no_img_lg.png":
+            self.photo.delete()
         super().delete(*args, **kwargs)
 
     # def delete(self, *args, **kargs):

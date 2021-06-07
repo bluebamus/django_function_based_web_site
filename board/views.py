@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from django.http import Http404
 from user.models import Usert
@@ -15,14 +16,14 @@ def board_detail(request, pk):
         board = Board.objects.get(pk=pk)
     except Board.DoesNotExist:
         raise Http404("게시글을 찾을 수 없습니다")
-    
+
     return render(request, "board_detail.html", {"board": board})
 
 
 @login_required
 def board_update(request, pk):
     try:
-        #board = Board.objects.get(pk=pk)
+        # board = Board.objects.get(pk=pk)
         board = get_object_or_404(Board, pk=pk)
     except Board.DoesNotExist:
         raise Http404("게시글을 찾을 수 없습니다")
@@ -34,22 +35,22 @@ def board_update(request, pk):
         err_msg = "글을 작성한 본인만 수정할 수 있습니다."
         return render(request, "board_detail.html", {"board": board, "err_msg": err_msg})
 
-    if request.method == "POST":                
-        form = BoardUpdateForm(request.POST or None, request.FILES or None, instance=board)        
-        if form.is_valid():            
+    if request.method == "POST":
+        form = BoardUpdateForm(request.POST or None, request.FILES or None, instance=board)
+        if form.is_valid():
             user_id = request.session.get("user")
             usert = Usert.objects.get(pk=user_id)
             tags = form.cleaned_data["tags"].split(",")
-            
+
             board.title = form.cleaned_data["title"]
             board.contents = form.cleaned_data["contents"]
             board.writer = usert
-            if form.cleaned_data["photo"]==None:
-                board.photo='default/no_img_lg.png'
-            elif form.cleaned_data["photo"]!=board.photo:
+            if form.cleaned_data["photo"] == None:
+                board.photo = "default/no_img_lg.png"
+            elif form.cleaned_data["photo"] != board.photo:
                 board.photo = form.cleaned_data["photo"]
-            else :
-                pass            
+            else:
+                pass
             board.save()
             # 보드 생성 이후 pk가 만들어지고 나서 만들어야 에러 발생이 안됨
             for tag in tags:
@@ -69,7 +70,7 @@ def board_update(request, pk):
             return redirect("board_detail", pk=pk)
         else:
             print(form.errors)
-    form = BoardUpdateForm(instance=board)    
+    form = BoardUpdateForm(instance=board)
     # ModelForm에서는 initial이 아닌 instance로 객체를 전달해야한다.
     """form = BoardUpdateForm(
         initial={
@@ -78,7 +79,7 @@ def board_update(request, pk):
             "tags": [tag.name for tag in board.tags.all()],
             "photo": board.photo,
         }
-    )"""    
+    )"""
     return render(request, "board_update.html", {"form": form, "board": board})
 
 
@@ -110,8 +111,8 @@ def board_write(request):
     if not request.session.get("user"):
         return redirect("/login/")
 
-    if request.method == "POST":        
-        form = BoardForm(request.POST, request.FILES or None)        
+    if request.method == "POST":
+        form = BoardForm(request.POST, request.FILES or None)
         if form.is_valid():
             user_id = request.session.get("user")
             usert = Usert.objects.get(pk=user_id)
@@ -122,8 +123,8 @@ def board_write(request):
             board.contents = form.cleaned_data["contents"]
             board.writer = usert
             board.photo = form.cleaned_data["photo"]
-            if board.photo==None:
-                board.photo='default/no_img_lg.png'            
+            if board.photo == None:
+                board.photo = "default/no_img_lg.png"
             board.save()
 
             # 보드 생성 이후 pk가 만들어지고 나서 만들어야 에러 발생이 안됨
@@ -157,3 +158,25 @@ def board_list(request):
 
     boards = paginator.get_page(page)
     return render(request, "board_list.html", {"boards": boards})
+
+
+@login_required
+def likes(request, pk):
+    try:
+        like_blog = get_object_or_404(Board, pk=pk)
+    except Board.DoesNotExist:
+        raise Http404("게시글을 찾을 수 없습니다")
+
+    user_id = request.session.get("user")
+    item = like_blog.like.values_list("id")
+
+    if like_blog.like.filter(id=user_id):
+        like_blog.like.remove(user_id)
+        like_blog.like_count -= 1
+        like_blog.save()
+    else:
+        like_blog.like.add(user_id)
+        like_blog.like_count += 1
+        like_blog.save()
+
+    return redirect("board_detail", pk=pk)
