@@ -49,5 +49,51 @@
             
         </div>
     </div>
+
+    <!-- 댓글 목록 -->
+    
+    <div class="row mx-2">
+        <div class="col-lg-10 comment-bg">
+            <div class="page-header my-2">
+                <h2>Comments</h2>
+            </div>
+            <div class="comments-list">
+            {% for comment in comments %}
+                <div class="media">
+                    <div class="media-body">
+                        <h4 class="media-heading user_name">
+                        {{ comment.user }}
+                        </h4>
+                        {{ comment.content }}
+                        <hr>
+                    </div>
+                    <button class="btn btn-secondary btn-sm ml-3" onclick="location.href='{% url 'comment_delete' comment.id %}'">삭제하기</button>
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 댓글 등록하기 -->
+    <div class="row mx-2">
+        {% if cmt_errors %}
+        <ul>
+            {% for error in cmt_errors %}
+            <li><div class="alert alert-primary">{{ error }}</div></li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <h3>댓글 쓰기</h3>
+        <form method="post" action="{% url 'comment_write' %}" enctype="multipart/form-data" class="col-lg-12 mx-auto">
+        {% csrf_token %}
+            <input type="hidden" name="post_id" value="{{ board.id }}">
+            <div class="form-group row">
+                <textarea class="form-control" name="content" rows="7"></textarea>
+            </div>
+        <div class="form-group row float-right">
+            <button type="submit" class="btn btn-primary">저장하기</button>
+        </div>
+        </form>
+    </div>
 </div>
 {% endblock %}

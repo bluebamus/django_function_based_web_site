@@ -8,4 +8,6 @@ urlpatterns = [
     path("delete/<int:pk>/", views.board_delete, name="board_delete"),
     path("update/<int:pk>/", views.board_update, name="board_update"),
     path("like/<int:pk>/", views.likes, name="board_like"),
+    path('comment/write', views.comment_write, name='comment_write'),
+    path('comment/delete/<int:pk>', views.comment_delete, name='comment_delete'),
 ]

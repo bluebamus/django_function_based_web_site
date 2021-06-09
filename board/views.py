@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from django.http import Http404
 from user.models import Usert
 from tag.models import Tag
-from .models import Board
+from .models import Board, Comment
 from .forms import BoardForm, BoardUpdateForm
 from user.decorators import *
 
@@ -14,10 +15,11 @@ from user.decorators import *
 def board_detail(request, pk):
     try:
         board = Board.objects.get(pk=pk)
-    except Board.DoesNotExist:
+        comments = Comment.objects.filter(board=pk, is_deleted=False)
+    except (Board.DoesNotExist, Comment.DoesNotExist):
         raise Http404("게시글을 찾을 수 없습니다")
 
-    return render(request, "board_detail.html", {"board": board})
+    return render(request, "board_detail.html", {"board": board, "comments": comments})
 
 
 @login_required
@@ -168,7 +170,7 @@ def likes(request, pk):
         raise Http404("게시글을 찾을 수 없습니다")
 
     user_id = request.session.get("user")
-    item = like_blog.like.values_list("id")
+    # item = like_blog.like.values_list("id")
 
     if like_blog.like.filter(id=user_id):
         like_blog.like.remove(user_id)
@@ -180,3 +182,52 @@ def likes(request, pk):
         like_blog.save()
 
     return redirect("board_detail", pk=pk)
+
+
+@login_required
+def comment_write(request):
+    errors = []
+    if request.method == "POST":
+        post_id = request.POST.get("post_id", "").strip()
+        content = request.POST.get("content", "").strip()
+
+        if not content:
+            errors.append("댓글을 입력해주세요.")
+
+        if not errors:
+            comment = Comment.objects.create(
+                board=Board.objects.get(pk=post_id),
+                user=Usert.objects.get(pk=request.session.get("user")),
+                content=content,
+                parent_comment=None,
+            )
+
+            return redirect(reverse("board_detail", kwargs={"pk": post_id}))
+
+    return render(request, "blogs/post_detail.html", {"user": request.user, "cmt_errors": errors})
+    # return render(request, "board_detail.html", {"board": board, "err_msg": err_msg})
+
+
+@login_required
+def comment_delete(request, pk):
+    errors = []
+    try:
+        comment = Comment.objects.get(pk=pk)
+    except Board.DoesNotExist:
+        raise Http404("게시 댓글을 찾을 수 없습니다")
+
+    user_id = request.session.get("user")
+    user = Usert.objects.get(pk=user_id)
+
+    if user == comment.user:
+        # Comment.objects.get(pk=pk).delete()
+        comment.delete()
+    else:
+        errors.append("글을 작성한 본인만 삭제할 수 있습니다.")
+
+    comments = Comment.objects.filter(board=comment.board.id, is_deleted=False)
+    return render(
+        request,
+        "board_detail.html",
+        {"board": comment.board, "comments": comments, "err_msg": errors},
+    )

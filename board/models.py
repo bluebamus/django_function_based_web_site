@@ -2,6 +2,7 @@ from django.db import models
 import os
 from uuid import uuid4
 from django.utils import timezone
+from helpers.models import BaseModel
 from user.models import Usert
 
 # Create your models here.
@@ -66,3 +67,17 @@ class Board(models.Model):
         db_table = "board"
         verbose_name = "Board"
         verbose_name_plural = "Board"
+
+
+class Comment(BaseModel):
+    board = models.ForeignKey(Board, on_delete=models.CASCADE)
+    user = models.ForeignKey(Usert, on_delete=models.CASCADE)
+    content = models.TextField()
+    parent_comment = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
+    # 대댓글 기능은 fbv에서는 구현안함, cvb project에서 구현
+    def __str__(self):
+        return "%s - %s - %s" % (
+            self.id,
+            self.board,
+            self.user,
+        )
