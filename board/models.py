@@ -1,5 +1,7 @@
 from django.db import models
 import os
+from imagekit.models import ImageSpecField  # 썸네일 함수
+from imagekit.processors import ResizeToFill  # 사이즈조절
 from uuid import uuid4
 from django.utils import timezone
 from helpers.models import BaseModel
@@ -45,6 +47,13 @@ class Board(models.Model):
     registered_dttm = models.DateTimeField(auto_now_add=True, verbose_name="등록시간")
     photo = models.ImageField(upload_to=date_upload_to, verbose_name="이미지")
     # photo = models.ImageField(upload_to=date_upload_to, blank=True, null=True, default='default/no_img_lg.png', verbose_name="이미지")
+
+    photo_thumbnail = ImageSpecField(
+        source="photo",  # 원본 IageField이름
+        processors=[ResizeToFill(500, 325)],  # 사이즈 조정
+        format="JPEG",  # 최종 저장 포맷
+        options={"quality": 60},  # 저장 옵션
+    )
 
     like = models.ManyToManyField(Usert, related_name="likes", blank=True)
     like_count = models.PositiveIntegerField(default=0)

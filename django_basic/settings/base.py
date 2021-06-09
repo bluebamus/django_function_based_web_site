@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "board",
     "tag",
     "helpers",
+    "imagekit",
 ]
 
 MIDDLEWARE = [
