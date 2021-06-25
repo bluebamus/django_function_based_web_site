@@ -22,8 +22,7 @@ def login(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             request.session["user"] = form.user_id
-            context = {"username": form.user_name}
-            return render(request, "index.html", context)
+            return redirect("/")
     else:
         form = LoginForm()
 
@@ -55,8 +54,7 @@ def register(request):
 
                 # 가입과 동시에 로그인 상태로 만들어주는
                 request.session["user"] = usert.id
-                context = {"username": username}
-                return render(request, "index.html", context)
+                return redirect("/")
             else:
                 res_data["error"] = "아이디가 이미 가입되어 있습니다."
 

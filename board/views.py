@@ -16,7 +16,7 @@ def board_detail(request, pk):
     try:
         board = Board.objects.get(pk=pk)
         comments = Comment.objects.filter(board=pk, is_deleted=False)
-    except (Board.DoesNotExist, Comment.DoesNotExist):
+    except Board.DoesNotExist:
         raise Http404("게시글을 찾을 수 없습니다")
 
     return render(request, "board_detail.html", {"board": board, "comments": comments})
